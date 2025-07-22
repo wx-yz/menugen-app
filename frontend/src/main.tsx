@@ -1,13 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
-import { AuthProvider } from '@asgardeo/auth-react'
-import authConfig from './auth-config.ts'
+import { AuthProvider } from './hooks/useAuth.tsx'
 import './index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AuthProvider config={authConfig}>
+    <AuthProvider>
       <App />
     </AuthProvider>
   </React.StrictMode>,

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { Settings, User, Upload, Image, Camera, Folder, LogOut, LogIn } from 'lucide-react';
-import { useAuthContext } from '@asgardeo/auth-react';
-import authConfig from './auth-config.ts'
+import { useAuth } from './hooks/useAuth.tsx';
 
-const config = authConfig;
+const config = {
+  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:5001',
+  maxFileSize: 10 * 1024 * 1024, // 10MB
+  allowedFileTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
+};
 
 interface MenuItemResult {
   name: string;
@@ -16,7 +19,7 @@ interface ProcessedMenu {
 }
 
 const App: React.FC = () => {
-  const { state, signIn, signOut } = useAuthContext();
+  const { isAuthenticated, isLoading, user, signIn, signOut } = useAuth();
   const [openAIKey, setOpenAIKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -24,7 +27,7 @@ const App: React.FC = () => {
   const [menuResults, setMenuResults] = useState<ProcessedMenu | null>(null);
   const [showUploadOptions, setShowUploadOptions] = useState(false);
 
-  if (state.isLoading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
         <div className="text-center">
@@ -99,6 +102,7 @@ const App: React.FC = () => {
       const response = await fetch(`${config.apiUrl}/api/process-menu`, {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for Choreo managed auth
       });
 
       if (!response.ok) {
@@ -127,7 +131,7 @@ const App: React.FC = () => {
     setUploadedFile(null);
   };
 
-  if (!state.isAuthenticated) {
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
         <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full mx-4">
@@ -165,7 +169,7 @@ const App: React.FC = () => {
               
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <User size={20} />
-                <span>{state.username || 'User'}</span>
+                <span>{user?.name || user?.username || 'User'}</span>
               </div>
               
               <button

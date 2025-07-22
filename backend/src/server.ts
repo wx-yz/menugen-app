@@ -42,13 +42,72 @@ const upload = multer({
   }
 });
 
+// Middleware to extract user information from Choreo managed auth headers
+const extractUserInfo = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Choreo managed auth provides user information via headers
+  const userId = req.headers['x-user-id'] as string;
+  const userEmail = req.headers['x-user-email'] as string;
+  const userName = req.headers['x-user-name'] as string;
+  const username = req.headers['x-username'] as string;
+
+  if (userId) {
+    // Attach user info to request object
+    (req as any).user = {
+      id: userId,
+      email: userEmail,
+      name: userName,
+      username: username || userEmail?.split('@')[0],
+    };
+  } else if (process.env.NODE_ENV === 'development') {
+    // For development mode, create a mock user
+    (req as any).user = {
+      id: 'dev-user-123',
+      email: 'developer@example.com',
+      name: 'Developer User',
+      username: 'developer',
+    };
+  }
+
+  next();
+};
+
+// Apply user extraction middleware to all routes
+app.use(extractUserInfo);
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// User info endpoint for authentication status
+app.get('/api/auth/user', (req, res) => {
+  const user = (req as any).user;
+  
+  if (!user || !user.id) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  res.json({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    username: user.username,
+  });
+});
+
+// Authentication middleware
+const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const user = (req as any).user;
+  
+  if (!user || !user.id) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  next();
+};
+
 // Process menu endpoint
-app.post('/api/process-menu', upload.single('image'), async (req, res) => {
+app.post('/api/process-menu', requireAuth, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: 'No image file provided' });
