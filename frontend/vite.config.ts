@@ -8,6 +8,10 @@ export default defineConfig({
     port: 3000,
     host: true
   },
+  preview: {
+    port: 8080,
+    host: true
+  },
   build: {
     outDir: 'dist',
     sourcemap: true
