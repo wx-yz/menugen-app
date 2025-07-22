@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Settings, User, Upload, Image, Camera, Folder, LogOut, LogIn } from 'lucide-react';
 import { useAuthContext } from '@asgardeo/auth-react';
-import { config } from './config.js';
+import authConfig from './auth-config.ts'
+
+const config = authConfig;
 
 interface MenuItemResult {
   name: string;
