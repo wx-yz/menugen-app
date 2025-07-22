@@ -8,8 +8,4 @@ endpoints:
       port: 5001
     type: REST
     networkVisibilities: 
-      - Public
-      - Organization
-    auth:
-      required: true
-      authType: OAuth2
+      - Project
