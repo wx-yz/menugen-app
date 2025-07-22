@@ -1,0 +1,17 @@
+# +required Version of the file
+schemaVersion: 1.0
+
+# +required Name of the component
+componentName: menugen-backend
+componentDisplayName: MenuGen Backend API
+componentDescription: Backend API for MenuGen - AI-powered menu visualization
+
+# +required Type of the component
+componentType: Service
+
+# +optional Port the app is listening on
+port: 5001
+
+# +optional Ingress configuration for the component
+ingress:
+  include: "**"
