@@ -9,3 +9,4 @@ endpoints:
     type: REST
     networkVisibilities: 
       - Project
+      - Public
