@@ -3,7 +3,7 @@ import { Settings, User, Upload, Image, Camera, Folder, LogOut, LogIn } from 'lu
 import { useAuth } from './hooks/useAuth.tsx';
 
 const config = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:5001',
+  apiUrl: import.meta.env.VITE_API_URL || 'http://backend-1913708723:5001',
   maxFileSize: 10 * 1024 * 1024, // 10MB
   allowedFileTypes: ['image/png', 'image/jpeg', 'image/jpg', 'image/gif'],
 };
