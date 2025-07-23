@@ -224,7 +224,8 @@ app.use('/{*any}', (req, res) => {
   res.status(404).json({ error: 'Endpoint not found' });
 });
 
-app.listen(PORT, () => {
+app.listen(5001, '0.0.0.0', () => {
   console.log(`🚀 MenuGen API server running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
 });
+    
