@@ -11,7 +11,7 @@ import fs from 'fs';
 config();
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = 5001;
 
 // Middleware
 app.use(helmet());
@@ -228,4 +228,3 @@ app.listen(5001, '0.0.0.0', () => {
   console.log(`🚀 MenuGen API server running on port ${PORT}`);
   console.log(`📡 Health check: http://localhost:${PORT}/health`);
 });
-    
