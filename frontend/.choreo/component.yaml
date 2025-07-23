@@ -10,3 +10,7 @@ endpoints:
     networkVisibilities: 
       - Public
       - Project
+dependencies:
+    connectionReferences:
+    - name: backendconnection
+      resourceRef: service:/menugenapp/backend/v1/48076/PROJECT
