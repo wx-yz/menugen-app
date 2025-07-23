@@ -6,9 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "start": "npx vite --port 8080 --host",
+    "start": "npx vite --port 8080",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
