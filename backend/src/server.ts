@@ -79,22 +79,6 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// User info endpoint for authentication status
-app.get('/api/auth/user', (req, res) => {
-  const user = (req as any).user;
-  
-  if (!user || !user.id) {
-    return res.status(401).json({ error: 'Not authenticated' });
-  }
-
-  res.json({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    username: user.username,
-  });
-});
-
 // Authentication middleware
 const requireAuth = (req: express.Request, res: express.Response, next: express.NextFunction) => {
   const user = (req as any).user;

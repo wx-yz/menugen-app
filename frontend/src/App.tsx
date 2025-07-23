@@ -19,7 +19,7 @@ interface ProcessedMenu {
 }
 
 const App: React.FC = () => {
-  const { isAuthenticated, isLoading, user, signIn, signOut } = useAuth();
+  const { isAuthenticated, isLoading, user, signIn, signOut, error } = useAuth();
   const [openAIKey, setOpenAIKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
@@ -125,12 +125,6 @@ const App: React.FC = () => {
     setShowUploadOptions(false);
   };
 
-  const handleLogout = () => {
-    signOut();
-    setMenuResults(null);
-    setUploadedFile(null);
-  };
-
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
@@ -138,9 +132,15 @@ const App: React.FC = () => {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-primary-600 mb-2">MenuGen</h1>
             <p className="text-gray-600">Turn Menus into Magic</p>
+            {error && (
+              <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <p className="text-sm font-medium">Authentication Error</p>
+                <p className="text-xs mt-1">{error}</p>
+              </div>
+            )}
           </div>
           <button
-            onClick={() => signIn()}
+            onClick={signIn}
             className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 px-6 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
           >
             <LogIn size={20} />
@@ -157,7 +157,9 @@ const App: React.FC = () => {
       <header className="bg-white shadow-sm border-b border-primary-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-primary-600">MenuGen</h1>
+            <h1 className="text-2xl font-bold text-primary-600">
+              {user?.org_name || 'MenuGen'}
+            </h1>
             
             <div className="flex items-center gap-4">
               <button
@@ -173,7 +175,7 @@ const App: React.FC = () => {
               </div>
               
               <button
-                onClick={handleLogout}
+                onClick={signOut}
                 className="p-2 text-gray-600 hover:text-red-600 transition-colors"
               >
                 <LogOut size={20} />

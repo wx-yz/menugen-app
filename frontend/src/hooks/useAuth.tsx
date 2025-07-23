@@ -1,10 +1,13 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import Cookies from 'js-cookie';
 
 interface User {
   id: string;
   username: string;
   email?: string;
   name?: string;
+  org_name?: string;
+  [key: string]: any; // Allow additional properties from Choreo
 }
 
 interface AuthState {
@@ -17,7 +20,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   signIn: () => void;
   signOut: () => void;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -42,61 +45,51 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     error: null,
   });
 
-  const checkAuth = async () => {
+  const checkAuth = () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-      
-      // Check if user is authenticated by making a request to a protected endpoint
-      const response = await fetch('/api/auth/user', {
-        credentials: 'include', // Important for Choreo managed auth
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        const userData = await response.json();
-        setState({
-          isAuthenticated: true,
-          isLoading: false,
-          user: userData,
-          error: null,
-        });
-      } else if (response.status === 401) {
+      if (Cookies.get('userinfo')) {
+        // We are here after a login
+        const userInfoCookie = Cookies.get('userinfo');
+        if (userInfoCookie) {
+          sessionStorage.setItem("userInfo", userInfoCookie);
+          Cookies.remove('userinfo');
+          const userInfo = JSON.parse(atob(userInfoCookie));
+          setState({
+            isAuthenticated: true,
+            isLoading: false,
+            user: userInfo,
+            error: null,
+          });
+        }
+      } else if (sessionStorage.getItem("userInfo")) {
+        // We have already logged in
+        const userInfoString = sessionStorage.getItem("userInfo");
+        if (userInfoString) {
+          const userInfo = JSON.parse(atob(userInfoString));
+          setState({
+            isAuthenticated: true,
+            isLoading: false,
+            user: userInfo,
+            error: null,
+          });
+        }
+      } else {
+        console.log("User is not signed in");
         setState({
           isAuthenticated: false,
           isLoading: false,
           user: null,
           error: null,
         });
-      } else {
-        throw new Error('Failed to check authentication status');
       }
     } catch (error) {
       console.error('Auth check failed:', error);
-      
-      // In development mode, allow the app to work without authentication
-      if (import.meta.env.DEV) {
-        console.warn('Development mode: Simulating authenticated user');
-        setState({
-          isAuthenticated: true,
-          isLoading: false,
-          user: {
-            id: 'dev-user-123',
-            username: 'developer',
-            email: 'developer@example.com',
-            name: 'Developer User',
-          },
-          error: null,
-        });
-      } else {
-        setState({
-          isAuthenticated: false,
-          isLoading: false,
-          user: null,
-          error: error instanceof Error ? error.message : 'Authentication check failed',
-        });
-      }
+      setState({
+        isAuthenticated: false,
+        isLoading: false,
+        user: null,
+        error: error instanceof Error ? error.message : 'Authentication check failed',
+      });
     }
   };
 
@@ -105,37 +98,31 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.location.href = '/auth/login';
   };
 
-  const signOut = async () => {
+  const signOut = () => {
     try {
-      setState(prev => ({ ...prev, isLoading: true }));
-      
-      // Call the logout endpoint
-      const response = await fetch('/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (response.ok) {
-        setState({
-          isAuthenticated: false,
-          isLoading: false,
-          user: null,
-          error: null,
-        });
-        // Redirect to home page after logout
-        window.location.href = '/';
-      } else {
-        throw new Error('Logout failed');
-      }
+      sessionStorage.removeItem("userInfo");
+      const sessionHint = Cookies.get('session_hint');
+      window.location.href = `/auth/logout${sessionHint ? `?session_hint=${sessionHint}` : ''}`;
     } catch (error) {
       console.error('Logout failed:', error);
       setState(prev => ({
         ...prev,
-        isLoading: false,
         error: error instanceof Error ? error.message : 'Logout failed',
       }));
     }
   };
+
+  // Handle authentication errors from URL parameters
+  useEffect(() => {
+    const errorCode = new URLSearchParams(window.location.search).get('code');
+    const errorMessage = new URLSearchParams(window.location.search).get('message');
+    if (errorCode) {
+      setState(prev => ({
+        ...prev,
+        error: `Error Code: ${errorCode}. Error Description: ${errorMessage}`,
+      }));
+    }
+  }, []);
 
   useEffect(() => {
     checkAuth();
